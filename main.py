@@ -1,18 +1,41 @@
-# This is a sample Python script.
+import smtplib
+#importing from encoder module from email package
+from email import encoders
+# importing MIMEText class from email.mime.text module
+from email.mime.text import MIMEText
+#for attachment
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+server=smtplib.SMTP('smtp.gmail.com',25)#defining smtp server,port
+# server.connect("smtp.gmail.com",465)
+server.ehlo()
+# server.starttls()
+with open('password.txt','r') as f:
+    password=f.read()
+server.login('testmail@gmail.com',password)
+msg=MIMEMultipart()
 
+msg['From']='testmail@gmail.com'
+msg['To']='testmail@gmail.com'
+msg['Subject']='Hello World!'
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-    print("Hello")
-    print("World")
+with open('message.txt','r') as f:
+    message = f.read()
+msg.attach(MIMEText(message,'plain'))#attaching header and text to msg object
 
+filename='Sea.png'
+attachment= open(filename,'rb')#opening filename for reading  filename content in binary format(rb)
+# payload obj (p)
+p=MIMEBase('application','octet-stream')#to process the application(img here)
+p.set_payload(attachment.read())
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+encoders.encode_base64(p)# encoding info
+# payloads are declared within{}
+p.add_header('Content-Disposition', f'attachment;filename{filename}')#multiple parameters are separated by ';'
+msg.attach(p)#attaching payload to the msg
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+text=msg.as_string()# converting msg to a string
+# sending mail by the server
+server.sendmail('testmail@gmail.com','testmail@gmail.com',text)
+# server.quit()
